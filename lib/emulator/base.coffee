@@ -11,8 +11,26 @@ EventEmitter = require('events').EventEmitter
 # @event statusChanged
 ###
 class BaseEmulator extends EventEmitter
-  constructor: (options)->
 
+  ###
+  # The subclass should not override the constructor
+  #
+  # In order to init, please override init
+  # @see init()
+  ###
+  constructor: (options)->
+    options = options || {}
+    @_init options
+    @setOptions options
+    @setLogger options.logger if options.logger
+
+  ###
+  # This method will init everything.
+  #
+  # In order to change the behavior, please override method setOptions
+  # @see setOptions()
+  ###
+  _init: (options)->
     # const
     @STATUS = {
       UNKNOWN: -1
@@ -29,6 +47,8 @@ class BaseEmulator extends EventEmitter
       AV: 4
     }
 
+    @logger = null
+
     ## init defaults
     @status = options.status || @STATUS.OFF
     @volume = options.volume || 10
@@ -41,16 +61,17 @@ class BaseEmulator extends EventEmitter
     ]
     @currentSourceIndex = 0
 
-    @setDefault options
+  # override this method to force specific value as init
+  init: ->
 
-  setDefault: (options) ->
+  setOptions: (options) ->
 
   setSource: (sourceIndex) ->
     if 0 <= sourceIndex < @sources.length
       @currentSourceIndex = sourceIndex
       @emit 'sourceChanged', @, sourceIndex, @sources[@currentSourceIndex]
     else
-      console.log "Could not set the sourceIndex #{sourceIndex}, the index must be between 0 and #{@sources.length}"
+      @logger.log "Could not set the sourceIndex #{sourceIndex}, the index must be between 0 and #{@sources.length}" if @logger
     @
 
   ###
@@ -105,8 +126,8 @@ class BaseEmulator extends EventEmitter
       @volume = volumeLevel
       @emit 'volumeChanged', @, volumeLevel
     else
-      console.log "Could not decrease volume level under #{@volumeMin}" if volumeLevel < @volumeMin
-      console.log "Could not increase volume level more than #{@volumeMax}" if volumeLevel > @volumeMax
+      @logger.log "Could not decrease volume level under #{@volumeMin}" if @logger && volumeLevel < @volumeMin
+      @logger.log "Could not increase volume level more than #{@volumeMax}" if @logger && volumeLevel > @volumeMax
     @
 
   getVolume: ->
@@ -118,9 +139,13 @@ class BaseEmulator extends EventEmitter
   # @param {STATUS}
   ###
   setStatus: (status) ->
-    @emit 'statusChanged', @, status
-    @status = status
+    unless @status == status
+      @status = status
+      @emit 'statusChanged', @, status
     @
+
+  getStatus: ->
+    @status
 
   ###
   # isPowerOn
@@ -154,6 +179,12 @@ class BaseEmulator extends EventEmitter
   setPowerOff: ->
     @setStatus @STATUS.OFF
 
+  setLogger: (logger) ->
+    @logger = logger
+    @logger.log "Logger enabled"
+    @
 
+  getLogger: ->
+    @logger
 
 module.exports = BaseEmulator
