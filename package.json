@@ -16,7 +16,7 @@
     "TV"
   ],
   "author": "Tieu-Philippe KHIM <khim.tieu.philippe@gmail.com>",
-  "license": "ISC",
+  "license": "GNU GPL v2",
   "bugs": {
     "url": "https://github.com/spike008t/node-serial-tv/issues"
   },
