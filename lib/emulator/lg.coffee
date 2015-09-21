@@ -43,93 +43,20 @@ class LgEmulator extends BaseEmulator
   init: ->
     @id = 1
 
-  initSourceList: ->
-    @SOURCES_LIST = [
-      {
-        name: "DTV",
-        type: @SOURCE_TYPE.DTV
-        offset: 0
-        data: {
-          kb: 0
-          xb: 0
-        }
-      }
-      {
-        name: "DTV"
-        type: @SOURCE_TYPE.RF
-        offset: 0
-        data: {
-          kb: 1
-          xb: 1
-        }
-      }
-      {
-        name: "AV1"
-        type: @SOURCE_TYPE.AV
-        offset: 0
-        data: {
-          kb: 2
-          xb: 20
-        }
-      }
-      {
-        name: "AV2"
-        type: @SOURCE_TYPE.AV
-        offset: 1
-        data: {
-          kb: 3
-          xb: 21
-        }
-      }
-      {
-        name: "COMPONENT1"
-        type: @SOURCE_TYPE.COMPONENT
-        offset: 0
-        data: {
-          kb: 4
-          xb: 40
-        }
-      }
-      {
-        name: "COMPONENT2"
-        type: @SOURCE_TYPE.COMPONENT
-        offset: 1
-        data: {
-          kb: 5
-          xb: 41
-        }
-      }
-      {
-        name: "RGB-PC"
-        type: @SOURCE_TYPE.PC
-        offset: 0
-        data: {
-          kb: 6
-          xb: 60
-        }
-      }
-      {
-        name: "HDMI1/DVI"
-        type: @SOURCE_TYPE.HDMI
-        offset: 0
-        data: {
-          kb: 7
-          xb: 90
-        }
-      }
-      {
-        name: "HDMI2"
-        type: @SOURCE_TYPE.HDMI
-        offset: 1
-        data: {
-          kb: 8
-          xb: 91
-        }
-      }
-    ]
+
 
   process: (data, callback) ->
     callback = callback || (->)
+
+    cbValid = (err) =>
+      return callback err if err
+      args = data.split ' '
+
+      cmd = args[0]
+      fctName = "_cmd_#{cmd}"
+      return @[fctName](args, callback)
+
+    @isValid data, cbValid
 
 
   isValid: (data, callback) ->
@@ -139,16 +66,65 @@ class LgEmulator extends BaseEmulator
     for c in validCmd1
       cmd1 = c if c == data[0]
 
-    callback "Unknown command #{cmd}, the first char must start by #{validCmd1}" unless cmd1
+    if cmd == null
+      callback "Unknown command #{cmd}, the first char must start by #{validCmd1}"
+      return false
 
-    cmd = data.substr(0, 2)
+    args = data.split ' '
 
+    if args.length != 3
+      callback "Invalid lenght of the command, must have 2 space but #{args.length} given"
+      return false
 
-    _cmd_ka: (data, callback) ->
-    _cmd_kb: (data, callback) ->
-    _cmd_kc: (data, callback) ->
-    _cmd_kd: (data, callback) ->
-    _cmd_ke: (data, callback) ->
-    _cmd_kf: (data, callback) ->
-    _cmd_kg: (data, callback) ->
-    _cmd_kh: (data, callback) ->
+    cmd = args[0]
+    fct = "_cmd_#{cmd}"
+    if typeof @[fct] != 'function'
+      "The command #{cmd} is not supported!"
+      return false
+    return true
+
+  _cmd_ka: (data, callback) ->
+
+  _cmd_kb: (data, callback) ->
+
+  _cmd_kc: (data, callback) ->
+
+  _cmd_kd: (data, callback) ->
+
+  _cmd_ke: (data, callback) ->
+
+  _cmd_kf: (data, callback) ->
+
+  _cmd_kg: (data, callback) ->
+
+  _cmd_kh: (data, callback) ->
+
+  _cmd_ki: (data, callback) ->
+
+  _cmd_kj: (data, callback) ->
+
+  _cmd_kk: (data, callback) ->
+
+  _cmd_kl: (data, callback) ->
+
+  _cmd_km: (data, callback) ->
+
+  _cmd_kr: (data, callback) ->
+
+  _cmd_ks: (data, callback) ->
+
+  _cmd_kt: (data, callback) ->
+
+  _cmd_ku: (data, callback) ->
+
+  _cmd_jp: (data, callback) ->
+
+  _cmd_jq: (data, callback) ->
+
+  _cmd_ma: (data, callback) ->
+
+  _cmd_mb: (data, callback) ->
+
+  _cmd_mc: (data, callback) ->
+
+  _cmd_xb: (data, callback) ->
