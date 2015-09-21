@@ -320,10 +320,7 @@ class SamsungV2Emulator extends BaseEmulator
       @logger.log "SamsungV2::Receive command #{cmd.name}" if @logger
       return @[fctName](cmd, callback)
 
-      callback null
-
-    return false unless @isValid(data, cbValid)
-    return true
+    @isValid(data, cbValid)
 
   ###
   # isValid
@@ -535,8 +532,6 @@ class SamsungV2Emulator extends BaseEmulator
 
     osdType = 0
     osdType = 1 if data1 & (1 << 7)
-
-
 
     # treat response
     response = @_createCommand 0x00, 0x00, [0x01]
