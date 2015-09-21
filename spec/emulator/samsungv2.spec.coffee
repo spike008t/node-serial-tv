@@ -97,3 +97,9 @@ describe "Samsung v2 emulator", ->
       assert.equal emulator.isPowerOff(), true
       assert.equal ee.calledWithExactly('statusChanged', emulator, emulator.STATUS.OFF), true
       done()
+
+  describe "Commands 0x06", ->
+    beforeEach ->
+      ee.reset()
+
+      

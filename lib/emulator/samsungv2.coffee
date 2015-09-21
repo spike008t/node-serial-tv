@@ -194,8 +194,113 @@ class SamsungV2Emulator extends BaseEmulator
       @args = @args.subarray(4, @args.length - 1)
       @name = COMMANDS[@cmd2].name
 
-  init: ->
-    @debug = false
+  initSourceList: ->
+
+    # adding a new source type -> WiseLink
+    @SOURCE_TYPE.WISELINK = 10
+
+    ###
+    # Sources values
+    # bit 3-0
+    # 0000 [0] = RF
+    # 0001 [1] = SCART1
+    # 0010 [2] = SCART2
+    # 0011 [3] = AV1
+    # 0100 [4] = AV2
+    # 0101 [5] = S-VIDEO1
+    # 0110 [6] = S-VIDEO2
+    # 0111 [7] = COMPONENT1
+    # 1000 [8] = COMPONENT2
+    # 1001 [9] = PC1
+    # 1010 [10]= PC2
+    # 1011 [11]= HDMI1
+    # 1100 [12]= HDMI2
+    # 1101 [13]= HDMI3
+    # 1110 [14]= HDMI4
+    # 1111 [15]= WiseLink
+    ###
+    @SOURCES_LIST = [
+      {
+        name: "RF"
+        type: @SOURCE_TYPE.RF
+        offset: 0
+      }
+      {
+        name: "SCART1"
+        type: @SOURCE_TYPE.SCART
+        offset: 0
+      }
+      {
+        name: "SCART2"
+        type: @SOURCE_TYPE.SCART
+        offset: 1
+      }
+      {
+        name: "AV1"
+        type: @SOURCE_TYPE.AV
+        offset: 0
+      }
+      {
+        name: "AV2"
+        type: @SOURCE_TYPE.AV
+        offset: 1
+      }
+      {
+        name: "S-VIDEO1"
+        type: @SOURCE_TYPE.SVIDEO
+        offset: 0
+      }
+      {
+        name: "S-VIDEO2"
+        type: @SOURCE_TYPE.SVIDEO
+        offset: 1
+      }
+      {
+        name: "COMPONENT1"
+        type: @SOURCE_TYPE.COMPONENT
+        offset: 0
+      }
+      {
+        name: "COMPONENT2"
+        type: @SOURCE_TYPE.COMPONENT
+        offset: 1
+      }
+      {
+        name: "PC1"
+        type: @SOURCE_TYPE.PC
+        offset: 0
+      }
+      {
+        name: "PC2"
+        type: @SOURCE_TYPE.PC
+        offset: 1
+      }
+      {
+        name: "HDMI1"
+        type: @SOURCE_TYPE.HDMI
+        offset: 0
+      }
+      {
+        name: "HDMI2"
+        type: @SOURCE_TYPE.HDMI
+        offset: 1
+      }
+      {
+        name: "HDMI3"
+        type: @SOURCE_TYPE.HDMI
+        offset: 2
+      }
+      {
+        name: "HDMI4"
+        type: @SOURCE_TYPE.HDMI
+        offset: 3
+      }
+      {
+        name: "WiseLink"
+        type: @SOURCE_TYPE.HDMI
+        offset: 0
+      }
+    ]
 
   getFunctionName: (cmd) ->
     code = cmd.toString(16)
@@ -280,6 +385,44 @@ class SamsungV2Emulator extends BaseEmulator
     callback null
     return true
 
+  ###
+  # Set source from bytes
+  #
+  # bit 3-0
+  # 0000 = RF
+  # 0001 = SCART1
+  # 0010 = SCART2
+  # 0011 = AV1
+  # 0100 = AV2
+  # 0101 = S-VIDEO1
+  # 0110 = S-VIDEO2
+  # 0111 = COMPONENT1
+  # 1000 = COMPONENT2
+  # 1001 = PC1
+  # 1010 = PC2
+  # 1011 = HDMI1
+  # 1100 = HDMI2
+  # 1101 = HDMI3
+  # 1110 = HDMI4
+  # 1111 = WiseLink
+  ###
+  _setSource: (byte) ->
+    return false unless 0 < idx < 15
+    idx = byte & 15
+    sourceDefinitionWanted = @SOURCES_LIST[idx]
+    offsetWanted = sourceDefinitionWanted.offset || 0
+    offset = 0
+    sourcePos = 0
+    for sourceType in @sources
+      if sourceType == sourceDefinitionWanted.type
+        if offset == offsetWanted
+          @setSource sourcePos
+          return true
+        else
+          offset++
+      else
+        sourcePos++
+
   _createCommand: (cmd1, cmd2, datas, prefix) ->
     prefix = prefix || 0x58
     nbData = datas.length
@@ -297,12 +440,6 @@ class SamsungV2Emulator extends BaseEmulator
   response: (cmd)->
     data = new Buffer(6)
     # data.writeUIntBE 0x58 0x00 00 01 01, 0, 5
-
-  setDebug: ->
-    @debug = true
-
-  unsetDebug: ->
-    @debug = false
 
   ###
   # setStatus
@@ -356,7 +493,6 @@ class SamsungV2Emulator extends BaseEmulator
     dump_response = @dumpUa(response)
     @logger.log "SamsungV2::_cmd0x00 |||| => response #{dump_response}" if @logger
 
-
     callback null, @, response
     response
 
@@ -383,12 +519,29 @@ class SamsungV2Emulator extends BaseEmulator
     callback = (->) unless typeof callback == 'function'
     callback = callback || (->)
 
-
-
     response = @_createCommand 0x00, 0x00, [0x01]
 
     callback null, @, response
     response
 
+  ###
+  # Set input source
+  ###
+  _cmd0x06: (command, callback) ->
+    callback = (->) unless typeof callback == 'function'
+    callback = callback || (->)
+
+    data1 = command.args[0]
+
+    osdType = 0
+    osdType = 1 if data1 & (1 << 7)
+
+
+
+    # treat response
+    response = @_createCommand 0x00, 0x00, [0x01]
+
+    callback null, @, response
+    response
 
 module.exports = SamsungV2Emulator
