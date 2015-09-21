@@ -23,6 +23,7 @@ class BaseEmulator extends EventEmitter
     @_init options
     @setOptions options
     @setLogger options.logger if options.logger
+    @debug = false
 
   ###
   # This method will init everything.
@@ -45,6 +46,12 @@ class BaseEmulator extends EventEmitter
       HDMI: 2
       COMPOSITE: 3
       AV: 4
+      COMPONENT: 5
+      SVIDEO: 6
+      SCART: 7
+      PC: 8
+      RF: 9
+      DTV: 10
     }
 
     @logger = null
@@ -57,7 +64,8 @@ class BaseEmulator extends EventEmitter
     @sources = [
       @SOURCE_TYPE.NONE
       ,@SOURCE_TYPE.TV
-      ,@SOURCE_TYPE.HDMI
+      ,@SOURCE_TYPE.HDMI #emulate HDMI1
+      ,@SOURCE_TYPE.HDMI #emulate HDMI2
     ]
     @currentSourceIndex = 0
 
@@ -86,6 +94,9 @@ class BaseEmulator extends EventEmitter
 
   getCurrentSource: ->
     @getSource()
+
+  getActiveSource: ->
+    @getCurrentSource()
 
   getSourcesList: ()->
     @sources
@@ -186,5 +197,11 @@ class BaseEmulator extends EventEmitter
 
   getLogger: ->
     @logger
+
+  setDebug: ->
+    @debug = true
+
+  unsetDebug: ->
+    @debug = false
 
 module.exports = BaseEmulator
