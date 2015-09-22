@@ -69,6 +69,8 @@ class BaseEmulator extends EventEmitter
     ]
     @currentSourceIndex = 0
 
+    @init()
+
   # override this method to force specific value as init
   init: ->
 
