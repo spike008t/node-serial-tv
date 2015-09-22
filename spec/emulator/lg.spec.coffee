@@ -127,24 +127,35 @@ describe "Lg emulator", ->
 
     it "Change source to HDMI1", (done) ->
       # force source index to TV
-      emulator.sourceIndex = 1
+      emulator.currentSourceIndex = 1
 
       cmd = "kb 00 08\r"
       response = "b 00 OK08x\r"
       emulator.process cmd, cb
       assert.equal cb.calledWith(null, emulator, response), true, "The response must match"
       assert.equal emulator.getActiveSource(), emulator.SOURCE_TYPE.HDMI, true, "The current source must be HDMI"
-      assert.equal ee.calledWithExactly('sourceChanged', emulator, 8, emulator.SOURCE_TYPE.HDMI), true, "An event 'sourceChanged' must be emitted"
+      assert.equal ee.calledWithExactly('sourceChanged', emulator, emulator.sourcesMappingLegacy[8], emulator.SOURCE_TYPE.HDMI), true, "An event 'sourceChanged' must be emitted"
       done()
 
     it "Change source to HDMI2", (done) ->
       # force source index to TV
-      emulator.sourceIndex = 1
+      emulator.currentSourceIndex = 1
 
       cmd = "kb 00 09\r"
       response = "b 00 OK09x\r"
       emulator.process cmd, cb
       assert.equal cb.calledWith(null, emulator, response), true, "The response must match with #{response}"
       assert.equal emulator.getActiveSource(), emulator.SOURCE_TYPE.HDMI, true, "The current source must be HDM2"
-      assert.equal ee.calledWithExactly('sourceChanged', emulator, 9, emulator.SOURCE_TYPE.HDMI), true, "An event 'sourceChanged' must be emitted"
+      assert.equal ee.calledWithExactly('sourceChanged', emulator, emulator.sourcesMappingLegacy[9], emulator.SOURCE_TYPE.HDMI), true, "An event 'sourceChanged' must be emitted"
+      done()
+
+    it "Change to unknown source must response an error", (done) ->
+      emulator.currentSourceIndex = 1
+
+      cmd = "kb 00 10\r"
+      response = "b 00 NG01x\r"
+      emulator.process cmd, cb
+      assert.equal cb.calledWith(null, emulator, response), true, "The response must match with #{response}"
+      assert.equal emulator.getActiveSource(), emulator.sources[1], true, "The current source hasn't changed"
+      assert.equal ee.called, false, "No event must be trigged"
       done()
