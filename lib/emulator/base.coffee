@@ -76,6 +76,9 @@ class BaseEmulator extends EventEmitter
 
   setOptions: (options) ->
 
+  enableSource: (sourceIndex) ->
+    @setSource sourceIndex
+
   setSource: (sourceIndex) ->
     if 0 <= sourceIndex < @sources.length
       @currentSourceIndex = sourceIndex

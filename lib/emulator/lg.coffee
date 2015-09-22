@@ -51,6 +51,56 @@ class LgEmulator extends BaseEmulator
 
   init: ->
     @id = 1
+    # default source on LG
+    @sourcesMappingLegacy = [
+      [0, 1],  # 0
+      [2, 3], # 1
+      4, # 2
+      5, # 3
+      6, # 4
+      7, # 5
+      -1, # 6
+      8, # 7
+      9, # 8
+      10  # 9
+    ]
+    ###
+    # tvMode
+    # 0 = Antenna
+    # 1 = Cable
+    ###
+    @tvMode = 0
+    @sources = [
+      @SOURCE_TYPE.TV
+      @SOURCE_TYPE.TV
+      @SOURCE_TYPE.TV
+      @SOURCE_TYPE.TV
+      @SOURCE_TYPE.AV
+      @SOURCE_TYPE.AV
+      @SOURCE_TYPE.COMPONENT
+      @SOURCE_TYPE.COMPONENT
+      @SOURCE_TYPE.PC
+      @SOURCE_TYPE.HDMI
+      @SOURCE_TYPE.HDMI
+      @SOURCE_TYPE.HDMI
+      @SOURCE_TYPE.HDMI
+    ]
+
+    @sourcesMapping = [
+      { type: @SOURCE_TYPE.TV, id: 0 } # DTV Antenna
+      { type: @SOURCE_TYPE.TV, id: 1 } # DTV Cable
+      { type: @SOURCE_TYPE.TV, id: 10 } # Analog Antenna
+      { type: @SOURCE_TYPE.TV, id: 11 } # Analog Cable
+      { type: @SOURCE_TYPE.AV, id: 20 } # AV1
+      { type: @SOURCE_TYPE.AV, id: 21 } # AV2
+      { type: @SOURCE_TYPE.COMPONENT, id: 40 } # Component 1
+      { type: @SOURCE_TYPE.COMPONENT, id: 41 } # Component 2
+      { type: @SOURCE_TYPE.PC, id: 60 } # RGB PC
+      { type: @SOURCE_TYPE.HDMI, id: 90 } #ie HDMI1
+      { type: @SOURCE_TYPE.HDMI, id: 91 } #ie HDMI2
+      { type: @SOURCE_TYPE.HDMI, id: 92 } #ie HDMI3
+      { type: @SOURCE_TYPE.HDMI, id: 93 } #ie HDMI4
+    ]
 
   process: (data, callback) ->
     callback = callback || (->)
@@ -105,9 +155,28 @@ class LgEmulator extends BaseEmulator
     callback null
     return true
 
+  _createSuccessResponse: (cmd, data) ->
+    @_createResponse cmd, true, data
+
+  _createFailedResponse: (cmd, data) ->
+    @_createResponse cmd, false, data
+
+  _createFailedResponseIllegalCode: (cmd) ->
+    @_createFailedResponse cmd, 1
+
+  _createFailedResponseNotSupported: (cmd) ->
+    @_createFailedResponse cmd, 2
+
+  _createFailedResponseWaitMoreTime: (cmd) ->
+    @_createFailedResponse cmd, 3
+
   _createResponse: (cmd, isValid, data) ->
     ret = "OK"
     ret = "NG" unless isValid
+
+    data = "#{data}"
+    if data.length == 1
+      data = "0#{data}"
 
     response = "#{cmd.cmd.slice(-1)} #{cmd.id_str} #{ret}#{data}x\r"
     @logger.log "> RET > #{response}" if @logger
@@ -115,66 +184,158 @@ class LgEmulator extends BaseEmulator
 
   _cmd_ka: (cmd, callback) ->
     # get mode
-    if cmd.params == 'FF' || cmd.params == 'ff'
+    if cmd.params == 'FF'
       state = 0
       state = 1 if @isPowerOn()
-      response = @_createResponse cmd, true, state
+      response = @_createSuccessResponse cmd, state
     else # set mode
       state = parseInt(cmd.params, 10)
       if state != 0 && state != 1
-        response = @_createResponse cmd, false, 1
+        response = @_createFailedResponse cmd, 1
       else
         if state == 0 && @isPowerOn()
-          @setPowerOn()
-        else if state == 1 && @isPowerOn() == false
           @setPowerOff()
-        response = @_createResponse cmd, true
+        else if state == 1 && @isPowerOff()
+          @setPowerOn()
+        response = @_createSuccessResponse cmd, state
 
     callback null, @, response
     response
 
   _cmd_kb: (cmd, callback) ->
+    if cmd.params == 'FF'
+
+      idx = @sourcesMappingLegacy.indexOf @currentSourceIndex
+
+      response = @_createSuccessResponse cmd, idx
+    else
+      sourceIdxLegacy = parseInt cmd.params, 10
+
+      if 0 <= sourceIdxLegacy < @sourcesMappingLegacy.length
+
+        if @sourcesMappingLegacy[sourceIdxLegacy] == -1 # not available
+          response = @_createFailedResponseIllegalCode cmd
+        else
+          sourceIdx = @sourcesMappingLegacy[sourceIdxLegacy]
+          sourceIdx = sourceIdx[@tvMode] if sourceIdx instanceof Array
+          @setSource sourceIdx
+          response = @_createSuccessResponse cmd, @sourcesMappingLegacy.indexOf(@currentSourceIndex)
+      else
+        response = @_createFailedResponseIllegalCode cmd
+
+    callback null, @, response
+    response
 
   _cmd_kc: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_kd: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
+  # volume mute
   _cmd_ke: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
+  # volume control
   _cmd_kf: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_kg: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_kh: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_ki: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_kj: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_kk: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_kl: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_km: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_kr: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_ks: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_kt: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_ku: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_jp: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_jq: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_ma: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_mb: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
   _cmd_mc: (cmd, callback) ->
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
+  # Input select
   _cmd_xb: (cmd, callback) ->
+
+
+
+
+    response = @_createFailedResponseNotSupported cmd
+    callback null, @, response
+    response
 
 module.exports = LgEmulator
