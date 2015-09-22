@@ -32,7 +32,6 @@ describe "Samsung v2 emulator", ->
       assert.equal emulator.isValid(cmd), false, "The command is not defined"
       done()
 
-
   describe "createResponse", ->
 
     it "create a valid response must be valid and have a correct checksum", (done) ->
@@ -101,5 +100,3 @@ describe "Samsung v2 emulator", ->
   describe "Commands 0x06", ->
     beforeEach ->
       ee.reset()
-
-      
