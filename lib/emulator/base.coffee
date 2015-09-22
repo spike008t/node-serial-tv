@@ -82,7 +82,8 @@ class BaseEmulator extends EventEmitter
   setSource: (sourceIndex) ->
     if 0 <= sourceIndex < @sources.length
       @currentSourceIndex = sourceIndex
-      @emit 'sourceChanged', @, sourceIndex, @sources[@currentSourceIndex]
+      @logger.log "Emit 'sourceChanged'" if @logger
+      @emit 'sourceChanged', @, @currentSourceIndex, @sources[@currentSourceIndex]
     else
       @logger.log "Could not set the sourceIndex #{sourceIndex}, the index must be between 0 and #{@sources.length}" if @logger
     @
