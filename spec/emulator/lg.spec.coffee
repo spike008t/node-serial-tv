@@ -10,7 +10,7 @@ describe "Lg emulator", ->
   before ->
     emulator = new LgEmulator()
     emulator.setDebug()
-    emulator.setLogger console
+    # emulator.setLogger console
     ee = sinon.stub emulator, 'emit'
     cb = sinon.spy()
 
@@ -156,6 +156,52 @@ describe "Lg emulator", ->
       response = "b 00 NG01x\r"
       emulator.process cmd, cb
       assert.equal cb.calledWith(null, emulator, response), true, "The response must match with #{response}"
-      assert.equal emulator.getActiveSource(), emulator.sources[1], true, "The current source hasn't changed"
+      assert.equal emulator.getActiveSource(), emulator.sources[1], "The current source hasn't changed"
+      assert.equal ee.called, false, "No event must be trigged"
+      done()
+
+  describe "command xb", ->
+    beforeEach ->
+      cb = sinon.spy()
+      ee.reset()
+
+    before ->
+      # emulator.setLogger console
+
+
+    it "Change source to HDMI1", (done) ->
+      # force source index to TV
+      emulator.currentSourceIndex = 1
+
+      cmd = "xb 00 90\r"
+      response = "b 00 OK90x\r"
+      emulator.process cmd, cb
+      assert.equal cb.calledWith(null, emulator, response), true, "The response must match"
+      assert.equal emulator.getActiveSource(), emulator.SOURCE_TYPE.HDMI, "The current source must be HDMI"
+      assert.equal ee.calledWithExactly('sourceChanged', emulator, emulator.sourcesMappingLegacy[8], emulator.SOURCE_TYPE.HDMI), true, "An event 'sourceChanged' must be emitted"
+      done()
+
+    it "Change source to HDMI2", (done) ->
+      # force source index to TV
+      emulator.currentSourceIndex = 1
+
+      cmd = "xb 00 91\r"
+      response = "b 00 OK91x\r"
+      emulator.process cmd, cb
+      assert.equal cb.calledWith(null, emulator, response), true, "The response must match with #{response}"
+      assert.equal emulator.getActiveSource(), emulator.SOURCE_TYPE.HDMI, "The current source must be HDM2"
+      assert.equal ee.calledWithExactly('sourceChanged', emulator, emulator.sourcesMappingLegacy[9], emulator.SOURCE_TYPE.HDMI), true, "An event 'sourceChanged' must be emitted"
+      done()
+
+    it "Change to unknown source must response an error", (done) ->
+      emulator.currentSourceIndex = 1
+
+      assert.equal emulator.getActiveSource(), emulator.sources[1], true, "Assert that current source is idx 1 before test"
+
+      cmd = "xb 00 99\r"
+      response = "b 00 NG02x\r"
+      emulator.process cmd, cb
+      assert.equal cb.calledWith(null, emulator, response), true, "The response must match with #{response}"
+      assert.equal emulator.getActiveSource(), emulator.sources[1], "The current source hasn't changed"
       assert.equal ee.called, false, "No event must be trigged"
       done()

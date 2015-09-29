@@ -87,19 +87,19 @@ class LgEmulator extends BaseEmulator
     ]
 
     @sourcesMapping = [
-      { type: @SOURCE_TYPE.TV, id: 0 } # DTV Antenna
-      { type: @SOURCE_TYPE.TV, id: 1 } # DTV Cable
-      { type: @SOURCE_TYPE.TV, id: 10 } # Analog Antenna
-      { type: @SOURCE_TYPE.TV, id: 11 } # Analog Cable
-      { type: @SOURCE_TYPE.AV, id: 20 } # AV1
-      { type: @SOURCE_TYPE.AV, id: 21 } # AV2
-      { type: @SOURCE_TYPE.COMPONENT, id: 40 } # Component 1
-      { type: @SOURCE_TYPE.COMPONENT, id: 41 } # Component 2
-      { type: @SOURCE_TYPE.PC, id: 60 } # RGB PC
-      { type: @SOURCE_TYPE.HDMI, id: 90 } #ie HDMI1
-      { type: @SOURCE_TYPE.HDMI, id: 91 } #ie HDMI2
-      { type: @SOURCE_TYPE.HDMI, id: 92 } #ie HDMI3
-      { type: @SOURCE_TYPE.HDMI, id: 93 } #ie HDMI4
+      { type: @SOURCE_TYPE.TV, id: 0, idx: 0 } # DTV Antenna
+      { type: @SOURCE_TYPE.TV, id: 1, idx: 1 } # DTV Cable
+      { type: @SOURCE_TYPE.TV, id: 10, idx: 2 } # Analog Antenna
+      { type: @SOURCE_TYPE.TV, id: 11, idx: 3 } # Analog Cable
+      { type: @SOURCE_TYPE.AV, id: 20, idx: 4 } # AV1
+      { type: @SOURCE_TYPE.AV, id: 21, idx: 5 } # AV2
+      { type: @SOURCE_TYPE.COMPONENT, id: 40, idx: 6 } # Component 1
+      { type: @SOURCE_TYPE.COMPONENT, id: 41, idx: 7 } # Component 2
+      { type: @SOURCE_TYPE.PC, id: 60, idx: 8 } # RGB PC
+      { type: @SOURCE_TYPE.HDMI, id: 90, idx: 9 } #ie HDMI1
+      { type: @SOURCE_TYPE.HDMI, id: 91, idx: 10 } #ie HDMI2
+      { type: @SOURCE_TYPE.HDMI, id: 92, idx: 11 } #ie HDMI3
+      { type: @SOURCE_TYPE.HDMI, id: 93, idx: 12 } #ie HDMI4
     ]
 
   process: (data, callback) ->
@@ -330,11 +330,24 @@ class LgEmulator extends BaseEmulator
 
   # Input select
   _cmd_xb: (cmd, callback) ->
+    if cmd.params == 'FF'
+      source  = @getActiveSource();
+      response = @_createSuccessResponse cmd, source.id
+    else
+      sourceId = parseInt cmd.params, 10
 
+      sources_ = []
+      sources_.push s for s in @sourcesMapping when s.id == sourceId
 
+      @logger.log "-> res sources_ => #{sources_}" if @logger
 
+      if sources_.length == 0
+        response = @_createFailedResponseNotSupported cmd
+      else
+        source = sources_[0]
+        @setSource source.idx
+        response = @_createSuccessResponse cmd, source.id
 
-    response = @_createFailedResponseNotSupported cmd
     callback null, @, response
     response
 
