@@ -58,6 +58,8 @@ class BaseEmulator extends EventEmitter
 
     ## init defaults
     @status = options.status || @STATUS.OFF
+    @screenStatus = options.screenStatus || @STATUS.ON
+    @volumeStatus = options.volumeStatus || @STAUTS.ON
     @volume = options.volume || 10
     @volumeMax = options.volumeMax || 99
     @volumeMin = options.volumeMin || 0
@@ -79,11 +81,12 @@ class BaseEmulator extends EventEmitter
   enableSource: (sourceIndex) ->
     @setSource sourceIndex
 
-  setSource: (sourceIndex) ->
+  setSource: (sourceIndex, emit) ->
+    emit = true if emit is undefined
     if 0 <= sourceIndex < @sources.length
       @currentSourceIndex = sourceIndex
       @logger.log "Emit 'sourceChanged'" if @logger
-      @emit 'sourceChanged', @, @currentSourceIndex, @sources[@currentSourceIndex]
+      @emit 'sourceChanged', @, @currentSourceIndex, @sources[@currentSourceIndex] if emit
     else
       @logger.log "Could not set the sourceIndex #{sourceIndex}, the index must be between 0 and #{@sources.length}" if @logger
     @
@@ -138,13 +141,17 @@ class BaseEmulator extends EventEmitter
   # @param {Integer} volumeLevel the level volume asked
   # @return this
   ###
-  setVolume: (volumeLevel) ->
+  setVolume: (volumeLevel, emit) ->
+    emit = true if emit is undefined
     if @volumeMin <= volumeLevel <= @volumeMax
       @volume = volumeLevel
-      @emit 'volumeChanged', @, volumeLevel
+      @emit 'volumeChanged', @, volumeLevel if emit
+      # callback null, @, @volume
     else
-      @logger.log "Could not decrease volume level under #{@volumeMin}" if @logger && volumeLevel < @volumeMin
-      @logger.log "Could not increase volume level more than #{@volumeMax}" if @logger && volumeLevel > @volumeMax
+      msg = "Could not decrease volume level under #{@volumeMin}" if volumeLevel < @volumeMin
+      msg = "Could not increase volume level more than #{@volumeMax}" if volumeLevel > @volumeMax
+      @logger.log msg if @logger
+      # callback msg, @, @volume
     @
 
   getVolume: ->
@@ -155,10 +162,11 @@ class BaseEmulator extends EventEmitter
   #
   # @param {STATUS}
   ###
-  setStatus: (status) ->
+  setStatus: (status, emit) ->
+    emit = true if emit is undefined
     unless @status == status
       @status = status
-      @emit 'statusChanged', @, status
+      @emit 'statusChanged', @, status if emit
     @
 
   getStatus: ->
@@ -195,6 +203,20 @@ class BaseEmulator extends EventEmitter
   ###
   setPowerOff: ->
     @setStatus @STATUS.OFF
+
+  setScreenStatusOn: ->
+
+  setScreenStatusOff: ->
+
+  setScreenStatus: (status) ->
+
+  getScreenStatus: ->
+
+  isScreenOn: ->
+
+  setMute: ->
+
+  isMute: ->
 
   setLogger: (logger) ->
     @logger = logger
