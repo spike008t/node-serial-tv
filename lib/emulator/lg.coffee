@@ -231,6 +231,7 @@ class LgEmulator extends BaseEmulator
     callback null, @, response
     response
 
+  # screen mute
   _cmd_kd: (cmd, callback) ->
     response = @_createFailedResponseNotSupported cmd
     callback null, @, response
@@ -244,7 +245,17 @@ class LgEmulator extends BaseEmulator
 
   # volume control
   _cmd_kf: (cmd, callback) ->
-    response = @_createFailedResponseNotSupported cmd
+    if cmd.params == 'FF'
+      response = @_createSuccessResponse cmd, @getVolume().toString(16).toUpperCase()
+    else
+      volumeLevel_ = parseInt cmd.params, 16
+      @setVolume volumeLevel_
+
+      if @getVolume() == volumeLevel_
+        response = @_createSuccessResponse cmd, cmd.params
+      else
+        response = @_createFailedResponseIllegalCode cmd
+
     callback null, @, response
     response
 
