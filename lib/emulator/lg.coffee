@@ -109,7 +109,7 @@ class LgEmulator extends BaseEmulator
       data = data.toString('ascii')
 
     cbValid = (err) =>
-      return callback err if err
+      return callback err, @ if err
 
       cmd = new Command(data)
       fctName = "_cmd_#{cmd.cmd}"

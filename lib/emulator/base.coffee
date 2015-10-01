@@ -204,19 +204,43 @@ class BaseEmulator extends EventEmitter
   setPowerOff: ->
     @setStatus @STATUS.OFF
 
-  setScreenStatusOn: ->
+  setScreenOn: ->
+    @_setScreenStatus @STATUS.ON
 
-  setScreenStatusOff: ->
+  setScreenOff: ->
+    @_setScreenStatus @STATUS.ON
 
-  setScreenStatus: (status) ->
+  _setScreenStatus: (status) ->
+
+    return @ if status is @screenStatus
+
+    @screenStatus = status
+    @logger.log "Set screenStatus = #{status}"
+    @emit "screenStatus", @, @isScreenOn()
+    @
 
   getScreenStatus: ->
+    @screenStatus
 
   isScreenOn: ->
+    @screenStatus is @STATUS.ON
+
+  unsetMute: ->
+    @_setVolumeStatus @STATUS.ON
 
   setMute: ->
+    @_setVolumeStatus @STATUS.OFF
+
+  _setVolumeStatus: (status) ->
+    return @ if status is @volumeStatus
+
+    @volumeStatus = status
+    @logger.log "Set volumeStatus = #{status}"
+    @emit "volumeStatus", @, @isMute()
+    @
 
   isMute: ->
+    @volumeStatus is @STATUS.OFF
 
   setLogger: (logger) ->
     @logger = logger
