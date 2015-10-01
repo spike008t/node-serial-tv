@@ -38,7 +38,7 @@ class ServerCli
     shellOps = {
       name: "node-tv-server"
       exitMessage: "End of the server"
-      prompt: "node TV server"
+      prompt: "TV server"
       exit: =>
         @exit()
     }
@@ -47,7 +47,7 @@ class ServerCli
   initCommands: ->
     cmds = [
       {
-        name: "create"
+        name: "createEmulator"
         help: "Create a TV server"
         isAvailable: (ctx) =>
           @cmdCreateAvailable ctx
@@ -62,7 +62,7 @@ class ServerCli
           @cmdCreateHandler cmd, opts, ctx
       }
       {
-        name: "connector"
+        name: "createConnector"
         help: "Select the connector to use"
         isAvailable: (ctx) =>
           @cmdCreateConnectorAvaiable ctx
@@ -120,6 +120,7 @@ class ServerCli
     @emulator = switch opts.class
       when "samsung" then new SamsungEmulator()
       when "lg" then new LgEmulator()
+      else null
 
     if @emulator
       @logger.log "Emulator for #{opts.class} created!" if @logger
@@ -134,6 +135,7 @@ class ServerCli
     @connector = switch opts.class
       when "tcp" then new TcpConnector opts
       when "unix" then new UnixConnector opts
+      else null
 
     if @connector
       @logger.log "Connector for #{opts.class} created!" if @logger
