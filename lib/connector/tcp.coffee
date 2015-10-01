@@ -32,11 +32,8 @@ class TcpConnector extends BaseConnector
     @server.on 'listen', =>
       @onListenHandler()
 
-    console.log "TcpConnector::start", "Listening"
     @server.listen @port, =>
-      console.log "Listening ok"
       @onListenHandler()
-    console.log "TcpConnector::start", "Listening done"
 
   close: ->
     super
