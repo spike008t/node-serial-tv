@@ -59,7 +59,7 @@ class BaseEmulator extends EventEmitter
     ## init defaults
     @status = options.status || @STATUS.OFF
     @screenStatus = options.screenStatus || @STATUS.ON
-    @volumeStatus = options.volumeStatus || @STAUTS.ON
+    @volumeStatus = options.volumeStatus || @STATUS.ON
     @volume = options.volume || 10
     @volumeMax = options.volumeMax || 99
     @volumeMin = options.volumeMin || 0
