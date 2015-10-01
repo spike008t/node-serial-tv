@@ -194,6 +194,12 @@ class SamsungV2Emulator extends BaseEmulator
       @args = @args.subarray(4, @args.length - 1)
       @name = COMMANDS[@cmd2].name
 
+  init: ->
+    @initSourceList()
+
+  ###
+  # Init source list
+  ###
   initSourceList: ->
 
     # adding a new source type -> WiseLink
@@ -404,8 +410,9 @@ class SamsungV2Emulator extends BaseEmulator
   # 1111 = WiseLink
   ###
   _setSource: (byte) ->
-    return false unless 0 < idx < 15
     idx = byte & 15
+    return false unless 0 < idx < 15
+
     sourceDefinitionWanted = @SOURCES_LIST[idx]
     offsetWanted = sourceDefinitionWanted.offset || 0
     offset = 0
