@@ -6,4 +6,4 @@ class SamsungV2Client extends BaseDevice
   constructor: ->
     super()
 
-modules.export = SamsungV2Client
+module.exports = SamsungV2Client
