@@ -1,3 +1,4 @@
+'use strict'
 
 EventEmitter = require('events').EventEmitter
 
