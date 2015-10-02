@@ -15,8 +15,9 @@ class TcpConnector extends BaseConnector
 
   connect: ->
     super()
-    client = net.connect {ip: @ip, port: @port}
-    @onConnectionHandler client
+    @ip = "127.0.0.1" if @ip == "0.0.0.0"
+    console.log "Connect!"
+    client = net.connect @port,  @ip, => @onConnectionHandler client
 
   start: ->
     super()
@@ -67,6 +68,8 @@ class TcpConnector extends BaseConnector
       @client = null
       return false
     @logger.log "Accepting new client!" if @logger
+    @connected = true
+
     @client = client
 
     @client.on 'data', (data) =>
@@ -75,9 +78,9 @@ class TcpConnector extends BaseConnector
 
     @client.on 'end', =>
       @logger.log "Client disconnected" if @logger
+      @connected = false
       @client = null
       @emit "end", client, @
-
 
   onListenHandler: ->
     @logger.log "TCP: Listening...".green if @logger
