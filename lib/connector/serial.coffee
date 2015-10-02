@@ -17,14 +17,23 @@ class SerialConnector extends BaseConnector
     @options.baudrate = @params.baudrate || @options.baudrate
 
   connect: ->
+    super()
     @serial = new SerialPort @path, @options
 
   start: ->
+    super()
 
   close: ->
+    super()
 
   write: (data) ->
     super data
+    if @serial is null
+      @logger.error "Could not send data, not connected!".red if @logger
+      return
+
+    @logger.log "SEND:", data if @logger
+    @serial.write
 
 
 modules.export = SerialConnector
