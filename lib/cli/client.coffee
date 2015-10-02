@@ -44,10 +44,9 @@ class ClientCli
   initCommands: ->
     cmds = [
       {
-        name: "create"
+        name: "createClient"
         help: "Create a TV client"
-        isAvailable: (ctx) =>
-          @cmdCreateAvailable ctx
+        isAvailable: (ctx) => !@emulator
         options: {
           class: {
             help: "Select your TV brand to emulate. Values possible: samsung, lg"
@@ -59,10 +58,9 @@ class ClientCli
           @cmdCreateHandler cmd, opts, ctx
       }
       {
-        name: "connector"
+        name: "createConnector"
         help: "Select the connector to use"
-        isAvailable: (ctx) =>
-          @cmdCreateConnectorAvaiable ctx
+        isAvailable: (ctx) => !@connector
         options: {
           class: {
             help: "Select the connector to use. Values possible: tcp, fifo, serial"
@@ -82,19 +80,32 @@ class ClientCli
       {
         name: "start"
         help: "Start the client"
-        isAvailable: (ctx) ->
-          @emulator != null && @connector != null
+        isAvailable: (ctx) => @emulator && @connector && !@connector.connected
         handler: (cmd, opts, ctx) =>
           @cmdStart cmd, opts, ctx
       }
       {
         name: "powerOn"
         help: "send powerOn request the TV"
-        isAvailable: (ctx) ->
-          @emulator != null & @connector != null && @connector.connected
+        isAvailable: (ctx) => @emulator && @connector && @connector.connected
         handler: (cmd, opts, ctx) =>
           @cmdSendPowerOn cmd, opts, ctx
       }
+      {
+        name: "powerOff"
+        help: "send powerOff request the TV"
+        isAvailable: (ctx) => @emulator && @connector && @connector.connected
+        handler: (cmd, opts, ctx) =>
+          @cmdSendPowerOff cmd, opts, ctx
+      }
+      {
+        name: "powerStatus"
+        help: "send power status request the TV"
+        isAvailable: (ctx) => @emulator && @connector && @connector.connected
+        handler: (cmd, opts, ctx) =>
+          @cmdSendPowerStatus cmd, opts, ctx
+      }
+
     ]
 
     for cmd in cmds
@@ -105,22 +116,17 @@ class ClientCli
     @initCommands()
     @shell.startConsole()
 
-  # Commands Stuff
-  cmdCreateAvailable: (ctx) ->
-    @emulator is null
-
   cmdCreateHandler: (cmd, opts, ctx) ->
     @emulator = switch opts.class
-      when "samsung" then new SamsungEmulator()
-      when "lg" then new LgEmulator()
+      when "samsung" then new Samsung()
+      when "lg" then new Lg()
+      else null
 
     if @emulator
       @logger.log "Emulator for #{opts.class} created!" if @logger
+      @emulator.setLogger @logger
     else
       @logger.error "Could not create emulator!".red if @logger
-
-  cmdCreateConnectorAvaiable: (ctx) ->
-    @connector is null
 
   cmdCreateConnector: (cmd, opts, ctx) ->
     @logger.log "Create connector -> TODO" if @logger
@@ -139,20 +145,39 @@ class ClientCli
 
     @bindConnectorEmulator()
 
-    @logger.log "setLogger on connector"
-    @connector.setLogger @logger
+    @logger.log "setLogger on connector" if @logger
+    # @connector.setLogger @logger
 
-    @connector.start()
+    console.log 'connector connect'
+    @connector.connect()
 
   cmdSendPowerOn: (cmd, opts, ctx) ->
     @logger.log "Send PowerOn" if @logger
+    @emulator.powerOn()
+
+  cmdSendPowerOff: (cmd, opts, ctx) ->
+    @logger.log "Send PowerOff" if @logger
+    @emulator.powerOff()
+
+  cmdSendPowerStatus: (cmd, opts, ctx) ->
+    @logger.log "Send PowerStatus" if @logger
+    @emulator.powerStatus()
 
   _bindCommandClient: (data) ->
     @logger.log "Binding data", data
+    @emulator.recv data
 
   # binding stuff
   bindConnectorEmulator: ->
+    console.log 'binding data'
     @connector.on "data", (data) =>
       @_bindCommandClient data
+
+    console.log 'binding send'
+    @emulator.on "send", (data) =>
+      @logger.log "Send: ", data if @logger
+      @connector.write data
+
+    console.log 'end bindConnectorEmulator'
 
 module.exports = ClientCli
