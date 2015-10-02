@@ -6,6 +6,7 @@ LgEmulator = require '../emulator/lg'
 
 class LgClient extends BaseDevice
   constructor: (params)->
+    params = params || {}
     super params
     @id = params.id || "00"
     @cmds = {
@@ -25,8 +26,11 @@ class LgClient extends BaseDevice
     unless /^[a-z] [0-9]{2} (OK|NG)[0-9]{2}x$/.match data
       @logger.log "The received data is not a valid response" if @logger
 
-    @logger.log "The received data is valid!"
+    @logger.log "The received data is valid!" if @logger
 
+  powerStatus: ->
+    cmd = "ka 00 FF\r"
+    @send cmd
 
   powerOn: ->
     cmd = "ka 00 01\r"
@@ -37,8 +41,9 @@ class LgClient extends BaseDevice
     @send cmd
 
   setSource: (type, idx) ->
-
+    true
 
   recv: (data) ->
+    @logger.log "Received: #{data} -> ", data.toString() if @logger
 
-modules.export = LgClient
+module.exports = LgClient
