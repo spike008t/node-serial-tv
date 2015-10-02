@@ -1,21 +1,15 @@
 'use strict'
 
+EventEmitter = require('events').EventEmitter
+
 ###
 # Base class
 #
 # This class is the base class
 ###
-class BaseClient
+class BaseClient extends EventEmitter
   constructor: (params)->
-    @connector = params.connector
-
-  setConnector: (connector) ->
-    @connector = connector
-
-  initListener: ->
-    @connector.on 'data',
-
-  removeListener: ->
+    @params = params
 
   powerOn: (cb) ->
     cb = cb || (()->)
@@ -60,4 +54,7 @@ class BaseClient
   send: (data) ->
     @emit "send", data, @
 
-modules.export = BaseClient
+  recv: (data) ->
+
+
+module.exports = BaseClient
